@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+/* Simple utility for card shadows used across the app */
+.card {
+  @apply bg-white rounded-lg shadow-md p-4;
+}
+
+/* Enhanced Medical Chatbot Styles */
+.medical-response {
+  line-height: 1.6;
+}
+
+.medical-response strong {
+  @apply font-semibold text-gray-900;
+}
+
+.medical-response ul {
+  @apply list-disc list-inside my-2 space-y-1;
+}
+
+.medical-response li {
+  @apply text-sm;
+}
+
+.medical-response hr {
+  @apply my-3 border-gray-300;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Custom scrollbar for chat */
+.chat-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Emergency alert styles */
+.emergency-alert {
+  @apply bg-red-50 border-l-4 border-red-400 p-4 my-3 rounded-md;
+}
+
+.warning-alert {
+  @apply bg-orange-50 border-l-4 border-orange-400 p-4 my-3 rounded-md;
+}
+
+/* Medical specialty badge */
+.specialty-badge {
+  @apply inline-block bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full;
+}
+
+/* Masquer les barres de progression du navigateur */
+progress {
+  display: none !important;
+}
+
+::-webkit-progress-bar {
+  display: none !important;
+}
+
+::-webkit-progress-value {
+  display: none !important;
+}
+
+/* Masquer toute barre de progression */
+[role="progressbar"] {
+  display: none !important;
+}
+
+.progress-bar {
+  display: none !important;
+}
+
+/* Masquer l'indicateur de chargement du navigateur */
+.loading-indicator {
+  display: none !important;
+}
+
+/* Masquer spécifiquement la barre grise qui apparaît */
+* {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Supprimer toute barre de chargement du navigateur */
+::-webkit-progress-inner-element {
+  display: none !important;
+}
+
+/* Masquer les indicateurs de chargement visuels */
+div[style*="progress"],
+div[class*="progress"],
+div[class*="loading"],
+div[style*="width"][style*="height"][style*="background"] {
+  display: none !important;
+}
+
+/* Masquer complètement tous les éléments de chargement possibles */
+progress,
+.progress,
+.progress-bar,
+.loading-bar,
+[role="progressbar"],
+[aria-label*="progress"],
+[aria-label*="loading"],
+[class*="loader"],
+[class*="spinner"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
+/* Masquer les barres du navigateur */
+::-webkit-progress-bar,
+::-webkit-progress-value,
+::-moz-progress-bar {
+  display: none !important;
+}

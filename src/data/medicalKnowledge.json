@@ -1,0 +1,190 @@
+{
+  "diseases": [
+    {
+      "id": "migraine",
+      "name": "Migraine",
+      "specialty": "Médecine générale",
+      "symptoms": ["mal de tête", "céphalée", "douleur crânienne", "nausées", "photophobie"],
+      "description": "Maux de tête intenses et récurrents, souvent accompagnés de nausées",
+      "treatment": ["paracétamol", "ibuprofène", "repos dans l'obscurité"],
+      "prevention": ["éviter le stress", "sommeil régulier", "hydratation"],
+      "severity": "modéré"
+    },
+    {
+      "id": "angine",
+      "name": "Angine",
+      "specialty": "ORL",
+      "symptoms": ["mal de gorge", "fièvre", "déglutition difficile", "ganglions"],
+      "description": "Inflammation de la gorge, virale ou bactérienne",
+      "treatment": ["paracétamol", "gargarismes", "antibiotiques si bactérienne"],
+      "prevention": ["lavage des mains", "éviter les contacts"],
+      "severity": "léger"
+    },
+    {
+      "id": "bronchiolite",
+      "name": "Bronchiolite",
+      "specialty": "Pédiatrie",
+      "symptoms": ["toux", "fièvre", "gêne respiratoire", "sifflements"],
+      "description": "Infection virale des petites bronches chez le nourrisson",
+      "treatment": ["sérum physiologique", "paracétamol", "surveillance"],
+      "prevention": ["éviter la fumée", "lavage des mains"],
+      "severity": "modéré"
+    },
+    {
+      "id": "eczema",
+      "name": "Eczéma",
+      "specialty": "Dermatologie",
+      "symptoms": ["démangeaisons", "rougeurs", "plaques", "peau sèche"],
+      "description": "Inflammation chronique de la peau",
+      "treatment": ["crème hydratante", "dermocorticoïdes", "éviter les allergènes"],
+      "prevention": ["hydratation quotidienne", "vêtements en coton"],
+      "severity": "léger"
+    },
+    {
+      "id": "gastroenterite",
+      "name": "Gastro-entérite",
+      "specialty": "Médecine générale",
+      "symptoms": ["diarrhée", "vomissements", "douleurs abdominales", "fièvre"],
+      "description": "Inflammation de l'estomac et des intestins",
+      "treatment": ["réhydratation", "régime BRAT", "antispasmodiques"],
+      "prevention": ["hygiène alimentaire", "lavage des mains"],
+      "severity": "modéré"
+    },
+    {
+      "id": "conjonctivite",
+      "name": "Conjonctivite",
+      "specialty": "Ophtalmologie",
+      "symptoms": ["yeux rouges", "larmoiement", "démangeaisons", "écoulement"],
+      "description": "Inflammation de la conjonctive de l'œil",
+      "treatment": ["nettoyage au sérum physiologique", "collyres adaptés"],
+      "prevention": ["éviter de se frotter les yeux", "hygiène des mains"],
+      "severity": "léger"
+    },
+    {
+      "id": "allergie_pollen",
+      "name": "Allergie au pollen",
+      "specialty": "Allergologie",
+      "symptoms": ["éternuements", "nez qui coule", "yeux qui piquent", "toux"],
+      "description": "Réaction allergique aux pollens saisonniers",
+      "treatment": ["antihistaminiques", "corticoïdes nasaux", "éviter l'exposition"],
+      "prevention": ["fermer les fenêtres", "douche le soir"],
+      "severity": "léger"
+    },
+    {
+      "id": "carie_dentaire",
+      "name": "Carie dentaire",
+      "specialty": "Dentiste",
+      "symptoms": ["douleur dentaire", "sensibilité", "trou visible", "mauvaise haleine"],
+      "description": "Destruction de l'émail dentaire par les bactéries",
+      "treatment": ["détartrage", "plombage", "couronne si sévère"],
+      "prevention": ["brossage quotidien", "fil dentaire", "contrôles réguliers"],
+      "severity": "modéré"
+    },
+    {
+      "id": "anxiete",
+      "name": "Troubles anxieux",
+      "specialty": "Psychiatrie",
+      "symptoms": ["stress", "angoisse", "palpitations", "insomnie", "fatigue"],
+      "description": "État d'inquiétude et de tension persistante",
+      "treatment": ["thérapie cognitivo-comportementale", "relaxation", "anxiolytiques si nécessaire"],
+      "prevention": ["exercice physique", "méditation", "sommeil régulier"],
+      "severity": "modéré"
+    },
+    {
+      "id": "mycose_vaginale",
+      "name": "Mycose vaginale",
+      "specialty": "Gynécologie",
+      "symptoms": ["démangeaisons intimes", "pertes blanches", "brûlures", "irritation"],
+      "description": "Infection fongique du vagin",
+      "treatment": ["antifongiques locaux", "ovules", "crème apaisante"],
+      "prevention": ["vêtements en coton", "hygiène adaptée", "éviter les irritants"],
+      "severity": "léger"
+    }
+  ],
+  "medications": [
+    {
+      "name": "Paracétamol",
+      "type": "Antalgique/Antipyrétique",
+      "indications": ["douleur", "fièvre", "mal de tête"],
+      "dosage": "500mg à 1g toutes les 6h maximum",
+      "contraindications": ["insuffisance hépatique"],
+      "specialty": "Médecine générale"
+    },
+    {
+      "name": "Ibuprofène",
+      "type": "Anti-inflammatoire",
+      "indications": ["douleur", "inflammation", "fièvre"],
+      "dosage": "200-400mg toutes les 6-8h",
+      "contraindications": ["ulcère gastrique", "insuffisance rénale"],
+      "specialty": "Médecine générale"
+    },
+    {
+      "name": "Sérum physiologique",
+      "type": "Solution saline",
+      "indications": ["nettoyage nasal", "nettoyage oculaire", "désencombrement"],
+      "dosage": "Plusieurs fois par jour selon besoin",
+      "contraindications": [],
+      "specialty": "Pédiatrie"
+    },
+    {
+      "name": "Antihistaminique",
+      "type": "Anti-allergique",
+      "indications": ["allergies", "démangeaisons", "urticaire"],
+      "dosage": "1 comprimé par jour",
+      "contraindications": ["glaucome", "hypertrophie prostate"],
+      "specialty": "Allergologie"
+    }
+  ],
+  "symptoms_keywords": [
+    {
+      "symptom": "mal de tête",
+      "related_diseases": ["migraine", "tension", "sinusite"],
+      "urgency": "low",
+      "questions": ["Depuis quand?", "Où exactement?", "Intensité 1-10?"]
+    },
+    {
+      "symptom": "fièvre",
+      "related_diseases": ["infection", "grippe", "angine"],
+      "urgency": "medium",
+      "questions": ["Température?", "Autres symptômes?", "Depuis combien de temps?"]
+    },
+    {
+      "symptom": "toux",
+      "related_diseases": ["bronchite", "asthme", "allergie"],
+      "urgency": "low",
+      "questions": ["Toux sèche ou grasse?", "La nuit?", "Expectorations?"]
+    },
+    {
+      "symptom": "douleur abdominale",
+      "related_diseases": ["gastroenterite", "appendicite", "calculs"],
+      "urgency": "medium",
+      "questions": ["Localisation?", "Type de douleur?", "Nausées?"]
+    }
+  ],
+  "specialties_info": [
+    {
+      "name": "Médecine générale",
+      "description": "Prise en charge globale des problèmes de santé courants",
+      "common_conditions": ["rhume", "grippe", "hypertension", "diabète"],
+      "when_to_consult": "Premier recours pour tout problème de santé"
+    },
+    {
+      "name": "Pédiatrie",
+      "description": "Médecine spécialisée pour les enfants de 0 à 18 ans",
+      "common_conditions": ["bronchiolite", "gastroenterite", "eczéma infantile"],
+      "when_to_consult": "Tout problème de santé chez l'enfant"
+    },
+    {
+      "name": "Dermatologie",
+      "description": "Spécialité des maladies de la peau, cheveux et ongles",
+      "common_conditions": ["eczéma", "psoriasis", "acné", "grain de beauté"],
+      "when_to_consult": "Problèmes de peau, démangeaisons, lésions suspectes"
+    },
+    {
+      "name": "ORL",
+      "description": "Oreilles, nez, gorge et région cervico-faciale",
+      "common_conditions": ["otite", "sinusite", "angine", "acouphènes"],
+      "when_to_consult": "Problèmes auditifs, sinusiens, de gorge"
+    }
+  ]
+}

@@ -1,0 +1,568 @@
+{
+  "specialties": {
+    "medecine_generale": {
+      "name": "Médecine générale",
+      "description": "Prise en charge globale des problèmes de santé courants",
+      "diseases": [
+        {
+          "id": "grippe",
+          "name": "Grippe saisonnière",
+          "symptoms": ["fièvre", "courbatures", "fatigue", "mal de tête", "toux", "frissons", "douleurs musculaires"],
+          "description": "Infection virale respiratoire contagieuse",
+          "treatments": ["Doliprane 1000mg (paracétamol)", "Advil 400mg (ibuprofène)", "Grippex (paracétamol + vitamine C)", "Fervex (paracétamol + phéniramine)", "repos au lit", "hydratation 2-3L/jour"],
+          "severity": "modéré",
+          "duration": "5-7 jours",
+          "prevention": ["vaccination annuelle", "lavage des mains", "éviter les foules"]
+        },
+        {
+          "id": "hypertension",
+          "name": "Hypertension artérielle",
+          "symptoms": ["maux de tête", "fatigue", "essoufflement", "vision floue", "bourdonnements oreilles"],
+          "description": "Pression artérielle élevée chronique",
+          "treatments": ["Amlor 5mg (amlodipine)", "Coversyl 5mg (périndopril)", "Atacand 8mg (candésartan)", "Norvasc 10mg (amlodipine)", "régime sans sel", "exercice 30min/jour"],
+          "severity": "grave",
+          "duration": "chronique",
+          "prevention": ["alimentation équilibrée", "activité physique", "gestion du stress"]
+        },
+        {
+          "id": "diabete_type2",
+          "name": "Diabète de type 2",
+          "symptoms": ["soif excessive", "urination fréquente", "fatigue", "vision floue", "cicatrisation lente"],
+          "description": "Trouble du métabolisme du glucose",
+          "treatments": ["Glucophage 850mg (metformine)", "Diamicron 30mg (gliclazide)", "Januvia 100mg (sitagliptine)", "Amaryl 2mg (glimépiride)", "régime diabétique strict", "contrôle glycémique 3x/jour"],
+          "severity": "grave",
+          "duration": "chronique",
+          "prevention": ["alimentation équilibrée", "poids santé", "activité physique"]
+        },
+        {
+          "id": "rhume",
+          "name": "Rhume commun",
+          "symptoms": ["nez qui coule", "congestion nasale", "éternuements", "mal de gorge", "toux légère"],
+          "description": "Infection virale des voies respiratoires supérieures",
+          "treatments": ["Actifed (pseudoéphédrine + triprolidine)", "Humex Rhume (paracétamol + pseudoéphédrine)", "Drill Toux (dextrométhorphane)", "sérum physiologique", "repos", "tisanes chaudes"],
+          "severity": "léger",
+          "duration": "7-10 jours",
+          "prevention": ["lavage des mains", "éviter les contacts malades"]
+        },
+        {
+          "id": "bronchite_aigue",
+          "name": "Bronchite aiguë",
+          "symptoms": ["toux persistante", "expectorations", "mal de gorge", "fatigue", "douleur thoracique", "mal au poumon", "gêne respiratoire"],
+          "description": "Inflammation des bronches souvent d'origine virale",
+          "treatments": ["Mucomyst 600mg (acétylcystéine)", "Bronchokod (carbocistéine)", "Toplexil (oxomémazine)", "Advil 400mg", "inhalations eucalyptus", "sirop miel-citron"],
+          "severity": "modéré",
+          "duration": "1-3 semaines",
+          "prevention": ["éviter la fumée", "lavage des mains", "vaccination grippe"]
+        },
+        {
+          "id": "pneumonie",
+          "name": "Pneumonie",
+          "symptoms": ["toux avec expectorations", "fièvre", "frissons", "douleur thoracique", "essoufflement", "mal au poumon", "fatigue"],
+          "description": "Infection des poumons nécessitant un traitement médical urgent",
+          "treatments": ["antibiotiques", "repos", "hydratation", "antalgiques", "hospitalisation si sévère"],
+          "severity": "grave",
+          "duration": "2-6 semaines",
+          "prevention": ["vaccination pneumocoque", "hygiène des mains", "éviter le tabac"]
+        },
+        {
+          "id": "infection_respiratoire",
+          "name": "Infection respiratoire",
+          "symptoms": ["toux", "mal de gorge", "congestion", "mal au poumon", "douleur thoracique", "fatigue"],
+          "description": "Infection des voies respiratoires nécessitant surveillance",
+          "treatments": ["repos", "hydratation", "antalgiques", "surveillance température"],
+          "severity": "modéré",
+          "duration": "7-14 jours",
+          "prevention": ["hygiène des mains", "éviter contacts malades", "renforcer immunité"]
+        }
+      ]
+    },
+    "pediatrie": {
+      "name": "Pédiatrie",
+      "description": "Médecine spécialisée pour les enfants de 0 à 18 ans",
+      "diseases": [
+        {
+          "id": "bronchiolite",
+          "name": "Bronchiolite du nourrisson",
+          "symptoms": ["toux", "sifflements respiratoires", "gêne respiratoire", "fièvre", "difficultés alimentaires"],
+          "description": "Infection virale des petites bronches chez les bébés",
+          "treatments": ["sérum physiologique", "paracétamol", "surveillance", "kinésithérapie respiratoire"],
+          "severity": "modéré",
+          "duration": "10-15 jours",
+          "prevention": ["éviter la fumée", "lavage des mains", "éviter les foules"]
+        },
+        {
+          "id": "varicelle",
+          "name": "Varicelle",
+          "symptoms": ["boutons qui démangent", "fièvre", "fatigue", "mal de tête", "perte d'appétit"],
+          "description": "Infection virale très contagieuse",
+          "treatments": ["paracétamol", "antihistaminiques", "bains tièdes", "ongles courts"],
+          "severity": "modéré",
+          "duration": "7-10 jours",
+          "prevention": ["vaccination", "isolement des malades"]
+        },
+        {
+          "id": "otite_moyenne",
+          "name": "Otite moyenne aiguë",
+          "symptoms": ["douleur oreille", "fièvre", "pleurs", "troubles du sommeil", "écoulement oreille"],
+          "description": "Infection de l'oreille moyenne",
+          "treatments": ["antibiotiques", "antalgiques", "gouttes auriculaires"],
+          "severity": "modéré",
+          "duration": "5-7 jours",
+          "prevention": ["vaccination pneumocoque", "éviter la fumée"]
+        }
+      ]
+    },
+    "gynecologie": {
+      "name": "Gynécologie",
+      "description": "Santé reproductive féminine",
+      "diseases": [
+        {
+          "id": "mycose_vaginale",
+          "name": "Mycose vaginale",
+          "symptoms": ["démangeaisons intimes", "pertes blanches épaisses", "brûlures", "irritation", "douleurs rapport", "pertes vaginales", "pertes vaginales anormales", "démangeaisons vulve", "pertes blanches", "pertes épaisses", "irritation intime", "brûlures urinaires", "inconfort intime"],
+          "description": "Infection fongique du vagin",
+          "treatments": ["Lomexin 600mg ovule (fenticonazole)", "Gyno-Pevaryl 150mg ovule (éconazole)", "Myleugyne LP 100mg ovule (miconazole)", "Saforelle crème apaisante", "Lactibiane Candisis (probiotiques)", "toilette Saforelle"],
+          "severity": "léger",
+          "duration": "3-7 jours",
+          "prevention": ["vêtements coton", "hygiène adaptée", "éviter irritants"]
+        },
+        {
+          "id": "endometriose",
+          "name": "Endométriose",
+          "symptoms": ["douleurs pelviennes", "règles douloureuses", "saignements abondants", "fatigue", "troubles digestifs", "douleurs bas-ventre", "douleurs dans le bas-ventre", "mal au bas-ventre", "douleurs abdominales basses", "règles très douloureuses", "cycles douloureux", "douleurs pendant les règles"],
+          "description": "Tissu endométrial en dehors de l'utérus",
+          "treatments": ["Antadys 25mg (flurbiprofène)", "Ponstyl 500mg (acide méfénamique)", "Cerazette (désogestrel)", "Lutényl 5mg (nomégestrol)", "Visanne 2mg (diénogest)", "chaleur locale"],
+          "severity": "modéré à grave",
+          "duration": "chronique",
+          "prevention": ["diagnostic précoce", "suivi médical régulier"]
+        },
+        {
+          "id": "syndrome_premenstruel",
+          "name": "Syndrome prémenstruel",
+          "symptoms": ["irritabilité", "ballonnements", "seins tendus", "fatigue", "troubles de l'humeur"],
+          "description": "Symptômes avant les règles",
+          "treatments": ["Mag 2 300mg (magnésium)", "Bécozyme (vitamine B6)", "Spasfon 80mg (phloroglucinol)", "Magné B6 Stress", "tisane mélisse", "exercice doux yoga"],
+          "severity": "léger à modéré",
+          "duration": "cyclique",
+          "prevention": ["alimentation équilibrée", "gestion du stress"]
+        },
+        {
+          "id": "retard_regles",
+          "name": "Retard de règles",
+          "symptoms": ["retard de règles", "absence de règles", "règles en retard", "pas de règles", "retard menstruel", "retard cycle", "cycle en retard", "règles qui ne viennent pas"],
+          "description": "Absence ou retard des menstruations",
+          "treatments": ["test de grossesse", "consultation gynécologique", "bilan hormonal", "gestion du stress", "alimentation équilibrée", "repos"],
+          "severity": "léger à modéré",
+          "duration": "variable",
+          "prevention": ["suivi cycle menstruel", "gestion du stress", "poids stable"]
+        },
+        {
+          "id": "douleurs_pelviennes",
+          "name": "Douleurs pelviennes",
+          "symptoms": ["douleurs dans le bas-ventre", "douleurs pelviennes", "mal au bas-ventre", "douleurs abdominales basses", "crampes pelviennes", "douleurs ovaires", "mal aux ovaires", "douleurs utérus"],
+          "description": "Douleurs dans la région pelvienne féminine",
+          "treatments": ["Spasfon 80mg (phloroglucinol)", "Doliprane 1000mg", "Advil 400mg", "bouillotte chaude", "repos", "consultation gynécologique si persistant"],
+          "severity": "léger à modéré",
+          "duration": "variable",
+          "prevention": ["gestion du stress", "activité physique modérée"]
+        },
+        {
+          "id": "infection_vaginale",
+          "name": "Infection vaginale",
+          "symptoms": ["pertes vaginales anormales", "pertes malodorantes", "pertes jaunes", "pertes vertes", "brûlures urinaires", "démangeaisons", "irritation intime", "pertes abondantes"],
+          "description": "Infection bactérienne ou fongique du vagin",
+          "treatments": ["consultation gynécologique urgente", "prélèvement vaginal", "antibiotiques selon résultats", "Flagyl 500mg si bactérien", "ovules antifongiques si mycose", "toilette intime douce"],
+          "severity": "modéré",
+          "duration": "7-10 jours avec traitement",
+          "prevention": ["hygiène intime adaptée", "vêtements coton", "éviter douches vaginales"]
+        }
+      ]
+    },
+    "dermatologie": {
+      "name": "Dermatologie",
+      "description": "Spécialité des maladies de la peau, cheveux et ongles",
+      "diseases": [
+        {
+          "id": "eczema_atopique",
+          "name": "Eczéma atopique",
+          "symptoms": ["démangeaisons", "rougeurs", "plaques sèches", "desquamation", "inflammation"],
+          "description": "Dermatite chronique inflammatoire",
+          "treatments": ["Diprosone 0.05% (bétaméthasone)", "Locoid 0.1% (hydrocortisone)", "Dexeryl (émollient)", "Cetirizine 10mg (Zyrtec)", "Atarax 25mg (hydroxyzine)", "bains tièdes avoine"],
+          "severity": "modéré",
+          "duration": "chronique par poussées",
+          "prevention": ["hydratation quotidienne", "vêtements coton", "température modérée"]
+        },
+        {
+          "id": "acne",
+          "name": "Acné",
+          "symptoms": ["boutons", "points noirs", "inflammation", "kystes", "cicatrices"],
+          "description": "Inflammation des glandes sébacées",
+          "treatments": ["Effaclar Duo (La Roche-Posay)", "Cutacnyl 2.5% (peroxyde benzoyle)", "Differine 0.1% (adapalène)", "Tetralysal 300mg (lymécycline)", "Rubozinc 15mg", "nettoyant Avène Cleanance"],
+          "severity": "léger à modéré",
+          "duration": "variable",
+          "prevention": ["hygiène adaptée", "éviter manipulation", "cosmétiques non comédogènes"]
+        },
+        {
+          "id": "psoriasis",
+          "name": "Psoriasis",
+          "symptoms": ["plaques rouges", "squames blanches", "démangeaisons", "épaississement peau"],
+          "description": "Maladie inflammatoire chronique de la peau",
+          "treatments": ["Daivonex (calcipotriol)", "Diprosone 0.05%", "Daivobet (calcipotriol + bétaméthasone)", "Méthotrexate 10mg", "crème urée 10%", "bains de mer"],
+          "severity": "modéré à grave",
+          "duration": "chronique",
+          "prevention": ["éviter stress", "hydratation", "soleil modéré"]
+        }
+      ]
+    },
+    "nutrition": {
+      "name": "Nutrition",
+      "description": "Alimentation et troubles nutritionnels",
+      "diseases": [
+        {
+          "id": "obesite",
+          "name": "Obésité",
+          "symptoms": ["surpoids", "essoufflement", "fatigue", "douleurs articulaires", "ronflements"],
+          "description": "Excès de poids avec complications",
+          "treatments": ["régime hypocalorique", "activité physique", "suivi psychologique"],
+          "severity": "modéré à grave",
+          "duration": "chronique",
+          "prevention": ["alimentation équilibrée", "exercice régulier", "éducation nutritionnelle"]
+        },
+        {
+          "id": "carence_fer",
+          "name": "Carence en fer",
+          "symptoms": ["fatigue", "pâleur", "essoufflement", "ongles cassants", "cheveux fragiles"],
+          "description": "Déficit en fer dans l'organisme",
+          "treatments": ["suppléments fer", "alimentation riche en fer", "vitamine C"],
+          "severity": "modéré",
+          "duration": "réversible",
+          "prevention": ["alimentation variée", "supplémentation si besoin"]
+        },
+        {
+          "id": "trouble_alimentaire",
+          "name": "Troubles du comportement alimentaire",
+          "symptoms": ["restriction alimentaire", "compulsions", "obsessions poids", "troubles de l'image"],
+          "description": "Dysfonctionnement du rapport à l'alimentation",
+          "treatments": ["thérapie cognitivo-comportementale", "suivi nutritionnel", "soutien psychologique"],
+          "severity": "grave",
+          "duration": "variable",
+          "prevention": ["éducation alimentaire", "estime de soi", "détection précoce"]
+        },
+        {
+          "id": "perte_poids",
+          "name": "Accompagnement perte de poids",
+          "symptoms": ["veux perdre du poids", "perdre du poids", "maigrir", "mincir", "objectif poids", "régime"],
+          "description": "Conseil nutritionnel pour perdre du poids sainement",
+          "treatments": ["plan alimentaire personnalisé", "éducation nutritionnelle", "suivi régulier", "activité physique"],
+          "severity": "léger",
+          "duration": "3-6 mois",
+          "prevention": ["maintien habitudes saines", "activité physique régulière"]
+        },
+        {
+          "id": "conseil_nutritionnel",
+          "name": "Conseil en nutrition",
+          "symptoms": ["améliorer alimentation", "conseils nutrition", "équilibrer repas", "habitudes alimentaires"],
+          "description": "Optimisation de l'alimentation pour la santé",
+          "treatments": ["bilan nutritionnel", "plan alimentaire", "éducation diététique"],
+          "severity": "léger",
+          "duration": "1-3 mois",
+          "prevention": ["alimentation variée", "écoute des besoins du corps"]
+        },
+        {
+          "id": "prise_poids",
+          "name": "Accompagnement prise de poids",
+          "symptoms": ["prendre du poids", "gagne du poids", "gagner du poids", "grossir", "trop maigre", "sous poids", "manque appétit", "veux prendre du poids", "veux grossir", "augmenter poids"],
+          "description": "Conseil nutritionnel pour prise de poids saine",
+          "treatments": ["plan hypercalorique", "suppléments nutritionnels", "stimulation appétit"],
+          "severity": "modéré",
+          "duration": "3-6 mois",
+          "prevention": ["repas réguliers", "alimentation dense en énergie"]
+        }
+      ]
+    },
+    "allergologie": {
+      "name": "Allergologie",
+      "description": "Allergies et intolérances",
+      "diseases": [
+        {
+          "id": "rhinite_allergique",
+          "name": "Rhinite allergique",
+          "symptoms": ["éternuements", "nez qui coule", "nez bouché", "yeux qui piquent", "larmoiement"],
+          "description": "Allergie respiratoire aux pollens ou acariens",
+          "treatments": ["antihistaminiques", "corticoïdes nasaux", "désensibilisation"],
+          "severity": "léger à modéré",
+          "duration": "saisonnière ou permanente",
+          "prevention": ["éviter allergènes", "filtres air", "lavage nasal"]
+        },
+        {
+          "id": "urticaire",
+          "name": "Urticaire",
+          "symptoms": ["plaques rouges", "démangeaisons", "gonflements", "papules", "œdème"],
+          "description": "Réaction allergique cutanée",
+          "treatments": ["antihistaminiques", "corticoïdes", "éviter déclencheurs"],
+          "severity": "léger à grave",
+          "duration": "aiguë ou chronique",
+          "prevention": ["identifier allergènes", "carnet alimentaire", "éviter stress"]
+        },
+        {
+          "id": "allergie_alimentaire",
+          "name": "Allergie alimentaire",
+          "symptoms": ["nausées", "vomissements", "diarrhée", "urticaire", "gonflement visage"],
+          "description": "Réaction immune à un aliment",
+          "treatments": ["éviction alimentaire", "antihistaminiques", "adrénaline auto-injectable"],
+          "severity": "modéré à grave",
+          "duration": "permanente",
+          "prevention": ["lecture étiquettes", "éviction stricte", "éducation entourage"]
+        }
+      ]
+    },
+    "dentiste": {
+      "name": "Dentiste",
+      "description": "Santé bucco-dentaire",
+      "diseases": [
+        {
+          "id": "carie_dentaire",
+          "name": "Carie dentaire",
+          "symptoms": ["douleur dentaire", "sensibilité", "trou visible", "mauvaise haleine", "douleur mastication"],
+          "description": "Destruction de l'émail par les bactéries",
+          "treatments": ["plombage", "couronne", "dévitalisation", "extraction"],
+          "severity": "léger à grave",
+          "duration": "progressive",
+          "prevention": ["brossage quotidien", "fil dentaire", "fluor", "contrôles réguliers"]
+        },
+        {
+          "id": "gingivite",
+          "name": "Gingivite",
+          "symptoms": ["gencives rouges", "saignements", "gonflement", "mauvaise haleine"],
+          "description": "Inflammation des gencives",
+          "treatments": ["détartrage", "bains de bouche", "hygiène renforcée"],
+          "severity": "léger à modéré",
+          "duration": "réversible",
+          "prevention": ["brossage efficace", "fil dentaire", "bains de bouche"]
+        },
+        {
+          "id": "abces_dentaire",
+          "name": "Abcès dentaire",
+          "symptoms": ["douleur intense", "gonflement", "fièvre", "pus", "ganglions"],
+          "description": "Infection bactérienne de la dent",
+          "treatments": ["antibiotiques", "drainage", "traitement canalaire"],
+          "severity": "grave",
+          "duration": "urgence",
+          "prevention": ["hygiène dentaire", "soins précoces", "contrôles réguliers"]
+        }
+      ]
+    },
+    "orl": {
+      "name": "ORL (Oto-Rhino-Laryngologie)",
+      "description": "Oreilles, nez, gorge et cou",
+      "diseases": [
+        {
+          "id": "otite_moyenne_adulte",
+          "name": "Otite moyenne",
+          "symptoms": ["douleur oreille", "fièvre", "écoulement oreille", "diminution audition", "sensation oreille bouchée"],
+          "description": "Infection de l'oreille moyenne chez l'adulte",
+          "treatments": ["antibiotiques", "antalgiques", "gouttes auriculaires", "anti-inflammatoires"],
+          "severity": "modéré",
+          "duration": "5-10 jours",
+          "prevention": ["éviter eau dans oreilles", "traiter infections nasales", "hygiène nasale"]
+        },
+        {
+          "id": "angine",
+          "name": "Angine",
+          "symptoms": ["mal de gorge", "fièvre", "déglutition difficile", "ganglions", "voix enrouée"],
+          "description": "Inflammation de la gorge",
+          "treatments": ["antalgiques", "antibiotiques si bactérienne", "gargarismes"],
+          "severity": "modéré",
+          "duration": "5-7 jours",
+          "prevention": ["lavage des mains", "éviter contacts malades"]
+        },
+        {
+          "id": "sinusite",
+          "name": "Sinusite",
+          "symptoms": ["douleur faciale", "congestion nasale", "écoulement purulent", "mal de tête", "fièvre"],
+          "description": "Inflammation des sinus",
+          "treatments": ["décongestionnants", "antibiotiques", "lavage nasal", "antalgiques"],
+          "severity": "modéré",
+          "duration": "7-14 jours",
+          "prevention": ["éviter rhumes", "humidification air", "lavage nasal"]
+        },
+        {
+          "id": "vertiges",
+          "name": "Vertiges",
+          "symptoms": ["sensation rotation", "nausées", "vomissements", "perte équilibre", "acouphènes"],
+          "description": "Trouble de l'équilibre",
+          "treatments": ["antivertigineux", "kinésithérapie vestibulaire", "repos"],
+          "severity": "modéré",
+          "duration": "variable",
+          "prevention": ["éviter mouvements brusques", "hydratation", "stress management"]
+        }
+      ]
+    },
+    "ophtalmologie": {
+      "name": "Ophtalmologie",
+      "description": "Santé des yeux et de la vision",
+      "diseases": [
+        {
+          "id": "conjonctivite",
+          "name": "Conjonctivite",
+          "symptoms": ["yeux rouges", "larmoiement", "démangeaisons", "écoulement", "sensation corps étranger"],
+          "description": "Inflammation de la conjonctive",
+          "treatments": ["collyres antiseptiques", "compresses froides", "éviter frottements"],
+          "severity": "léger",
+          "duration": "5-10 jours",
+          "prevention": ["hygiène des mains", "éviter partage objets", "lunettes protection"]
+        },
+        {
+          "id": "secheresse_oculaire",
+          "name": "Sécheresse oculaire",
+          "symptoms": ["yeux secs", "brûlures", "fatigue oculaire", "vision floue", "photophobie"],
+          "description": "Insuffisance de larmes",
+          "treatments": ["larmes artificielles", "hygiène paupières", "humidificateur"],
+          "severity": "léger à modéré",
+          "duration": "chronique",
+          "prevention": ["pauses écran", "humidification", "protection vent"]
+        },
+        {
+          "id": "myopie",
+          "name": "Myopie",
+          "symptoms": ["vision floue de loin", "plissement des yeux", "fatigue oculaire", "maux de tête"],
+          "description": "Défaut de réfraction",
+          "treatments": ["lunettes", "lentilles", "chirurgie réfractive"],
+          "severity": "léger à modéré",
+          "duration": "permanente",
+          "prevention": ["pauses écran", "activités extérieures", "contrôles réguliers"]
+        }
+      ]
+    },
+    "psychiatrie": {
+      "name": "Psychiatrie",
+      "description": "Santé mentale et troubles psychiques",
+      "diseases": [
+        {
+          "id": "depression",
+          "name": "Dépression",
+          "symptoms": ["tristesse persistante", "perte d'intérêt", "fatigue", "troubles du sommeil", "perte d'appétit", "dors mal", "insomnie", "moral bas", "plus rien m'intéresse", "déprimé", "triste", "cafard", "mal-être"],
+          "description": "Trouble de l'humeur",
+          "treatments": ["antidépresseurs", "psychothérapie", "activité physique", "soutien social"],
+          "severity": "modéré à grave",
+          "duration": "épisodique ou chronique",
+          "prevention": ["gestion du stress", "activité physique", "réseau social"]
+        },
+        {
+          "id": "anxiete_generalisee",
+          "name": "Trouble anxieux généralisé",
+          "symptoms": ["inquiétude excessive", "tension musculaire", "fatigue", "troubles concentration", "irritabilité", "anxieux", "angoisse", "stress", "nerveux", "inquiet", "peur", "panique"],
+          "description": "Anxiété persistante et envahissante",
+          "treatments": ["anxiolytiques", "thérapie cognitivo-comportementale", "relaxation"],
+          "severity": "modéré",
+          "duration": "chronique",
+          "prevention": ["techniques relaxation", "exercice physique", "sommeil régulier"]
+        },
+        {
+          "id": "troubles_sommeil",
+          "name": "Troubles du sommeil",
+          "symptoms": ["dors mal", "insomnie", "réveil nocturne", "difficulté endormissement", "fatigue au réveil", "somnolence", "cauchemars"],
+          "description": "Difficultés liées au sommeil",
+          "treatments": ["hygiène du sommeil", "relaxation", "thérapie comportementale", "mélatonine"],
+          "severity": "léger à modéré",
+          "duration": "variable",
+          "prevention": ["routine sommeil", "éviter écrans", "activité physique", "éviter excitants"]
+        },
+        {
+          "id": "burnout",
+          "name": "Syndrome d'épuisement professionnel",
+          "symptoms": ["épuisement", "cynisme", "sentiment d'inefficacité", "troubles du sommeil", "irritabilité"],
+          "description": "Épuisement lié au travail",
+          "treatments": ["arrêt de travail", "psychothérapie", "réorganisation professionnelle"],
+          "severity": "modéré à grave",
+          "duration": "variable",
+          "prevention": ["équilibre vie-travail", "gestion du stress", "pauses régulières"]
+        }
+      ]
+    },
+    "odontologie": {
+      "name": "Odontologie - Dentaire",
+      "description": "Santé bucco-dentaire et maladies des dents",
+      "diseases": [
+        {
+          "id": "carie_dentaire",
+          "name": "Carie dentaire",
+          "symptoms": ["mal aux dents", "douleur dentaire", "sensibilité", "dent qui fait mal", "mal de dent", "douleur en mangeant", "sensibilité au froid", "sensibilité au chaud"],
+          "description": "Destruction de l'émail et de la dentine par les bactéries",
+          "treatments": ["Doliprane 1000mg", "Advil 400mg", "bain de bouche Eludril", "gel Dynexan 2%", "consultation dentiste urgente", "éviter sucré/froid"],
+          "severity": "modéré",
+          "duration": "progressive",
+          "prevention": ["brossage 2x/jour", "fil dentaire", "contrôles dentaires", "éviter sucre"]
+        },
+        {
+          "id": "abces_dentaire",
+          "name": "Abcès dentaire",
+          "symptoms": ["joue gonflée", "gonflement visage", "douleur intense dent", "fièvre", "mal aux dents", "pus", "goût amer", "ganglions gonflés", "douleur pulsatile"],
+          "description": "Infection bactérienne avec accumulation de pus",
+          "treatments": ["Augmentin 1g (amoxicilline + acide clavulanique)", "Doliprane 1000mg", "Advil 400mg", "bain bouche Paroex", "compresses froides", "URGENCE DENTAIRE"],
+          "severity": "grave",
+          "duration": "aiguë",
+          "prevention": ["hygiène dentaire", "traitement caries", "contrôles réguliers"]
+        },
+        {
+          "id": "gingivite",
+          "name": "Gingivite",
+          "symptoms": ["gencives qui saignent", "gencives rouges", "gencives gonflées", "mauvaise haleine", "saignement brossage", "douleur gencives"],
+          "description": "Inflammation des gencives",
+          "treatments": ["bain bouche Paroex", "Eludril", "brossage doux", "Parodontax dentifrice", "détartrage dentiste", "fil dentaire quotidien"],
+          "severity": "léger à modéré",
+          "duration": "chronique",
+          "prevention": ["brossage efficace", "fil dentaire", "détartrage régulier"]
+        },
+        {
+          "id": "rage_dents",
+          "name": "Rage de dents",
+          "symptoms": ["douleur dentaire intense", "mal de dents insupportable", "douleur pulsatile", "réveille la nuit", "irradie dans la mâchoire", "mal aux dents aigu"],
+          "description": "Douleur dentaire aiguë très intense",
+          "treatments": ["Doliprane 1000mg + Advil 400mg", "Tramadol 50mg", "clou de girofle", "bain bouche froid", "URGENCE DENTAIRE immédiate"],
+          "severity": "très grave",
+          "duration": "aiguë",
+          "prevention": ["soins dentaires préventifs", "traitement rapide caries"]
+        },
+        {
+          "id": "dent_sagesse",
+          "name": "Problème dent de sagesse",
+          "symptoms": ["douleur fond bouche", "gonflement derrière molaire", "difficulté ouvrir bouche", "mal mâchoire", "gencive gonflée", "trismus"],
+          "description": "Inflammation ou infection liée aux dents de sagesse",
+          "treatments": ["Advil 400mg", "Solupred 20mg (prednisolone)", "bain bouche Paroex", "compresses froides", "consultation dentiste", "alimentation molle"],
+          "severity": "modéré à grave",
+          "duration": "aiguë",
+          "prevention": ["surveillance dentaire", "extraction préventive si nécessaire"]
+        }
+      ]
+    }
+  },
+  "symptoms_mapping": {
+    "fievre": ["grippe", "angine", "otite_moyenne", "otite_moyenne_adulte", "abces_dentaire", "sinusite", "pneumonie"],
+    "mal_de_tete": ["grippe", "hypertension", "sinusite", "myopie", "stress"],
+    "toux": ["grippe", "rhume", "bronchiolite", "bronchite_aigue", "pneumonie", "infection_respiratoire"],
+    "mal_au_poumon": ["bronchite_aigue", "pneumonie", "infection_respiratoire"],
+    "douleur_thoracique": ["bronchite_aigue", "pneumonie", "infection_respiratoire"],
+    "douleur_poumon": ["bronchite_aigue", "pneumonie", "infection_respiratoire"],
+    "douleur_oreille": ["otite_moyenne", "otite_moyenne_adulte"],
+    "mal_oreille": ["otite_moyenne", "otite_moyenne_adulte"],
+    "fatigue": ["grippe", "depression", "carence_fer", "burnout", "diabete_type2", "pneumonie"],
+    "douleur": ["carie_dentaire", "abces_dentaire", "angine", "endometriose"],
+    "demangeaisons": ["eczema_atopique", "mycose_vaginale", "urticaire", "conjonctivite"],
+    "nausees": ["allergie_alimentaire", "vertiges", "grossesse"],
+    "essoufflement": ["obesite", "hypertension", "carence_fer", "pneumonie", "bronchite_aigue"]
+  },
+  "emergency_keywords": {
+    "urgence_immediate": ["difficulte_respirer", "douleur_poitrine", "perte_conscience", "hemorragie", "convulsions"],
+    "urgence_elevee": ["fievre_elevee", "vomissements_persistants", "douleur_intense", "gonflement_visage"],
+    "surveillance": ["fievre_prolongee", "fatigue_extreme", "changement_comportement"]
+  },
+  "follow_up_questions": {
+    "duration": "Depuis combien de temps ressentez-vous ces symptômes ?",
+    "intensity": "Sur une échelle de 1 à 10, quelle est l'intensité de la douleur ?",
+    "frequency": "Ces symptômes sont-ils constants ou intermittents ?",
+    "triggers": "Avez-vous remarqué des facteurs déclenchants ?",
+    "medication": "Prenez-vous actuellement des médicaments ?",
+    "medical_history": "Avez-vous des antécédents médicaux particuliers ?"
+  }
+}
