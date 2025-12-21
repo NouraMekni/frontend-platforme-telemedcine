@@ -5,7 +5,7 @@ export default function SidebarAdmin() {
   const location = useLocation();
 
   const links = [
-    { name: "Tableau de bord", to: "/admin/reports" },
+    { name: "Rapports", to: "/admin/reports" },
     { name: "Utilisateurs", to: "/admin/users" },
     { name: "Dossiers médicaux", to: "/admin/medical-records" },
     { name: "Paiements", to: "/admin/payments" },
