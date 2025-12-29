@@ -11,23 +11,7 @@ if (typeof window !== 'undefined') {
   window.Buffer = Buffer;
 }
 
-// 2. Modern Google Maps Loader
-// IMPORTANT: Replace the string below with your actual API key starting with "AIza..."
-const GOOGLE_MAPS_API_KEY = 'PASTE_YOUR_REAL_AIza_KEY_HERE'; 
-
-const loadGoogleMaps = () => {
-  if (window.google?.maps) return;
-
-  const script = document.createElement('script');
-  // We use &v=beta or &v=weekly to ensure we have access to the 2025 "New" Places features
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly&loading=async`;
-  script.async = true;
-  script.defer = true;
-  document.head.appendChild(script);
-};
-
-loadGoogleMaps();
-
+// 2. Error Boundary
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -38,10 +22,9 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-          <h1>Something went wrong</h1>
-          <p>{this.state.error?.toString()}</p>
-          <button onClick={() => window.location.reload()}>Reload Page</button>
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <h1>Oups ! Quelque chose s'est mal passé.</h1>
+          <button onClick={() => window.location.reload()}>Recharger la page</button>
         </div>
       );
     }
