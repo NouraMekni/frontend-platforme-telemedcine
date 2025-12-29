@@ -5,27 +5,36 @@ import App from './App'
 import './index.css'
 import { Buffer } from 'buffer';
 
-// Buffer polyfill for browser compatibility
+// 1. Buffer polyfill
 if (typeof window !== 'undefined') {
   window.global = window;
   window.Buffer = Buffer;
 }
 
-// Error boundary for rendering
+// 2. Modern Google Maps Loader
+// IMPORTANT: Replace the string below with your actual API key starting with "AIza..."
+const GOOGLE_MAPS_API_KEY = 'PASTE_YOUR_REAL_AIza_KEY_HERE'; 
+
+const loadGoogleMaps = () => {
+  if (window.google?.maps) return;
+
+  const script = document.createElement('script');
+  // We use &v=beta or &v=weekly to ensure we have access to the 2025 "New" Places features
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly&loading=async`;
+  script.async = true;
+  script.defer = true;
+  document.head.appendChild(script);
+};
+
+loadGoogleMaps();
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
   }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('React Error:', error, errorInfo);
-  }
-
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error, errorInfo) { console.error('React Error:', error, errorInfo); }
   render() {
     if (this.state.hasError) {
       return (
@@ -36,35 +45,22 @@ class ErrorBoundary extends React.Component {
         </div>
       );
     }
-
     return this.props.children;
   }
 }
 
 const rootElement = document.getElementById('root');
-
-if (!rootElement) {
-  console.error('Root element not found!');
-} else {
-  try {
-    const root = createRoot(rootElement);
-    root.render(
-      <React.StrictMode>
-        <ErrorBoundary>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </ErrorBoundary>
-      </React.StrictMode>
-    );
-  } catch (error) {
-    console.error('Failed to render app:', error);
-    rootElement.innerHTML = `
-      <div style="padding: 20px; font-family: Arial;">
-        <h1>Failed to load application</h1>
-        <p>${error.toString()}</p>
-        <button onclick="window.location.reload()">Reload Page</button>
-      </div>
-    `;
-  }
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <BrowserRouter 
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
+          <App />
+        </BrowserRouter>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
 }

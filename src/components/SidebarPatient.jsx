@@ -8,7 +8,6 @@ export default function SidebarPatient() {
   const links = [
     { name: "Tableau de bord", to: "/patient/dashboard" },
     { name: "Messagerie", to: "/patient/chat" },
-    { name: "Rendez-vous", to: "/patient/appointments" },
     { name: "Paiements", to: "/patient/payments" },
     { name: "Mon dossier", to: "/patient/medical-folder" },
     { name: "Ordonnances", to: "/patient/prescriptions" },

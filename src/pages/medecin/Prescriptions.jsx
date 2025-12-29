@@ -1,193 +1,206 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
+import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
 
-const MEDICAMENTS_CATALOG = [
-  { name: 'Paracétamol', dosage: '500mg' },
-  { name: 'Ibuprofène', dosage: '200mg' },
-  { name: 'Amoxicilline', dosage: '1g' },
-  { name: 'Metformine', dosage: '850mg' }
-];
+const API_BASE_URL = 'http://localhost:8083/api';
 
 export default function Prescriptions() {
-  // State
+  const { user: medecin } = useAuth();
+
   const [patients, setPatients] = useState([]);
-  const [prescriptionsList, setPrescriptionsList] = useState([]);
-  const [selectedPatientId, setSelectedPatientId] = useState('');
-  const [selectedMeds, setSelectedMeds] = useState([]);
-  const [searchMed, setSearchMed] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [loadingPatients, setLoadingPatients] = useState(true);
+  const [error, setError] = useState(null);
 
-  // --- API Calls ---
+  // Ordonnance form data
+  const [ordonanceData, setOrdonanceData] = useState({
+    description: '',
+    medicaments: [{ name: '', dosage: '' }],
+  });
 
-  const fetchData = async () => {
-    try {
-      const [pRes, oRes] = await Promise.all([
-        fetch('http://localhost:8080/api/patients'),
-        fetch('http://localhost:8080/api/ordonances/all')
-      ]);
-      if (pRes.ok) setPatients(await pRes.json());
-      if (oRes.ok) setPrescriptionsList(await oRes.json());
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
+  const axiosConfig = {
+    headers: {
+      Authorization: medecin?.token ? `Bearer ${medecin.token}` : '',
+    },
   };
 
+  // Fetch patients
   useEffect(() => {
-    fetchData();
-    
-    // Optional: WebSocket connection for real-time updates
-    const socket = new WebSocket('ws://localhost:8080/ws/signaling');
-    socket.onmessage = (msg) => { if(msg.data === "REFRESH") fetchData(); };
-    return () => socket.close();
-  }, []);
+    if (!medecin?.id) return;
 
-  const handleAddMed = (med) => {
-    if (!selectedMeds.find(m => m.name === med.name)) {
-      setSelectedMeds([...selectedMeds, { ...med, posologie: '', duree: '' }]);
-    }
+    const fetchPatients = async () => {
+      setLoadingPatients(true);
+      try {
+        const response = await axios.get(`${API_BASE_URL}/patients`, axiosConfig);
+        setPatients(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching patients:', err);
+        setError('Erreur lors du chargement des patients');
+      } finally {
+        setLoadingPatients(false);
+      }
+    };
+
+    fetchPatients();
+  }, [medecin]);
+
+  // Add a new empty medicament row
+  const addMedicament = () => {
+    setOrdonanceData({
+      ...ordonanceData,
+      medicaments: [...ordonanceData.medicaments, { name: '', dosage: '' }],
+    });
   };
 
-  const handleSubmit = async () => {
-    if (!selectedPatientId || selectedMeds.length === 0) {
-      alert("Veuillez sélectionner un patient et au moins un médicament");
+  // Remove a medicament row
+  const removeMedicament = (index) => {
+    const newMedicaments = [...ordonanceData.medicaments];
+    newMedicaments.splice(index, 1);
+    setOrdonanceData({ ...ordonanceData, medicaments: newMedicaments });
+  };
+
+  // Update a medicament field
+  const handleMedicamentChange = (index, field, value) => {
+    const newMedicaments = [...ordonanceData.medicaments];
+    newMedicaments[index][field] = value;
+    setOrdonanceData({ ...ordonanceData, medicaments: newMedicaments });
+  };
+
+  // Handle form submit
+  const handleAddOrdonance = async () => {
+    if (!selectedPatient) {
+      alert('Veuillez sélectionner un patient.');
       return;
     }
 
-    setLoading(true);
-    const ordonnanceData = {
-      // Map complex objects to the List<String> expected by your Java Model
-      medicaments: selectedMeds.map(m => `${m.name} ${m.dosage} - ${m.posologie} pendant ${m.duree}`),
-      dateCreation: new Date(),
-      valideeParIA: false
-    };
+    if (
+      !ordonanceData.description ||
+      ordonanceData.medicaments.length === 0 ||
+      ordonanceData.medicaments.some((m) => !m.name || !m.dosage)
+    ) {
+      alert('Veuillez remplir tous les champs.');
+      return;
+    }
 
     try {
-      const response = await fetch('http://localhost:8080/api/ordonances/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ordonnanceData)
-      });
-
-      if (response.ok) {
-        alert("Ordonnance générée avec succès !");
-        setSelectedMeds([]);
-        setSelectedPatientId('');
-        fetchData(); // Refresh history
-      }
+      const response = await axios.post(
+        `${API_BASE_URL}/ordonances/add/${selectedPatient.id}/${medecin.id}`,
+        ordonanceData,
+        axiosConfig
+      );
+      console.log('✅ Ordonnance créée:', response.data);
+      alert('Ordonnance créée avec succès !');
+      setOrdonanceData({ description: '', medicaments: [{ name: '', dosage: '' }] });
     } catch (err) {
-      alert("Erreur serveur");
-    } finally {
-      setLoading(false);
+      console.error('Erreur création ordonnance:', err);
+      alert(
+        'Erreur lors de la création de l\'ordonnance : ' +
+          (err.response?.data?.message || err.message)
+      );
     }
   };
 
   return (
     <DashboardLayout>
-      <div className="p-6 max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Gestion des Ordonnances</h1>
+      <div className="max-w-7xl mx-auto p-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Créer une Ordonnance</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Column 1: Patient & Med Selection */}
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <h2 className="text-lg font-semibold mb-4">1. Sélection Patient</h2>
-              <select 
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                value={selectedPatientId}
-                onChange={(e) => setSelectedPatientId(e.target.value)}
-              >
-                <option value="">-- Choisir un patient --</option>
-                {patients.map(p => (
-                  <option key={p.id} value={p.id}>{p.prenom} {p.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <h2 className="text-lg font-semibold mb-4">2. Catalogue Médicaments</h2>
-              <input 
-                type="text"
-                placeholder="Rechercher..."
-                className="w-full p-2 mb-4 border rounded-md"
-                onChange={(e) => setSearchMed(e.target.value)}
-              />
-              <div className="max-h-48 overflow-y-auto space-y-2">
-                {MEDICAMENTS_CATALOG.filter(m => m.name.toLowerCase().includes(searchMed.toLowerCase())).map(m => (
-                  <div key={m.name} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
-                    <span className="text-sm">{m.name} ({m.dosage})</span>
-                    <button onClick={() => handleAddMed(m)} className="text-blue-600 text-sm font-bold">+ Ajouter</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Column 2: Editor */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border min-h-[400px]">
-            <h2 className="text-lg font-semibold mb-4 text-blue-700">3. Composition de l'ordonnance</h2>
-            {selectedMeds.length === 0 ? (
-              <p className="text-gray-400 text-center mt-20">L'ordonnance est vide</p>
-            ) : (
-              <div className="space-y-4">
-                {selectedMeds.map((med, i) => (
-                  <div key={i} className="p-4 border rounded-lg bg-blue-50/30">
-                    <div className="flex justify-between font-bold text-gray-700">
-                      <span>{med.name}</span>
-                      <button onClick={() => setSelectedMeds(selectedMeds.filter((_, idx) => idx !== i))} className="text-red-500">×</button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      <input 
-                        placeholder="Posologie" 
-                        className="text-xs p-2 border rounded"
-                        onChange={(e) => {
-                          const updated = [...selectedMeds];
-                          updated[i].posologie = e.target.value;
-                          setSelectedMeds(updated);
-                        }}
-                      />
-                      <input 
-                        placeholder="Durée" 
-                        className="text-xs p-2 border rounded"
-                        onChange={(e) => {
-                          const updated = [...selectedMeds];
-                          updated[i].duree = e.target.value;
-                          setSelectedMeds(updated);
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-                <button 
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition"
+        {/* Patients list */}
+        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-6">
+          {loadingPatients ? (
+            <p>Chargement des patients...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
+            <div className="space-y-2">
+              {patients.map((patient) => (
+                <div
+                  key={patient.id}
+                  className={`p-3 border rounded-lg cursor-pointer ${
+                    selectedPatient?.id === patient.id ? 'bg-blue-50 border-blue-300' : 'hover:bg-blue-50'
+                  }`}
+                  onClick={() => setSelectedPatient(patient)}
                 >
-                  {loading ? "Envoi en cours..." : "Générer & Sauvegarder"}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Column 3: History */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border overflow-y-auto max-h-[600px]">
-            <h2 className="text-lg font-semibold mb-4">Historique Récent</h2>
-            <div className="space-y-4">
-              {prescriptionsList.slice().reverse().map(ord => (
-                <div key={ord.id} className="p-3 border-b hover:bg-gray-50">
-                  <p className="text-xs text-blue-500 font-mono">Ord #{ord.id}</p>
-                  <p className="text-xs text-gray-400">{new Date(ord.dateCreation).toLocaleDateString()}</p>
-                  <ul className="mt-1">
-                    {ord.medicaments.map((m, idx) => (
-                      <li key={idx} className="text-xs text-gray-700">• {m}</li>
-                    ))}
-                  </ul>
+                  {patient.name} {patient.prenom} — {patient.email}
                 </div>
               ))}
             </div>
-          </div>
-
+          )}
         </div>
+
+        {/* Ordonnance form */}
+        {selectedPatient && (
+          <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6">
+            <h2 className="text-xl font-semibold mb-4">
+              Nouvelle Ordonnance pour {selectedPatient.name} {selectedPatient.prenom}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
+                <textarea
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
+                  rows="3"
+                  value={ordonanceData.description}
+                  onChange={(e) =>
+                    setOrdonanceData({ ...ordonanceData, description: e.target.value })
+                  }
+                  placeholder="Description de l'ordonnance..."
+                />
+              </div>
+
+              {/* Medicaments dynamic fields */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-2">Médicaments</label>
+                {ordonanceData.medicaments.map((med, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Nom"
+                      className="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={med.name}
+                      onChange={(e) => handleMedicamentChange(index, 'name', e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Dosage"
+                      className="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={med.dosage}
+                      onChange={(e) => handleMedicamentChange(index, 'dosage', e.target.value)}
+                    />
+                    {ordonanceData.medicaments.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeMedicament(index)}
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                      >
+                        ❌
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addMedicament}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg mt-2"
+                >
+                  ➕ Ajouter Médicament
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={handleAddOrdonance}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300"
+              >
+                Créer Ordonnance
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
