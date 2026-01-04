@@ -1,313 +1,257 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
+import { 
+  Search, 
+  Download, 
+  Filter, 
+  CreditCard, 
+  CheckCircle2, 
+  Clock, 
+  FileText,
+  TrendingUp
+} from 'lucide-react'
 import DashboardLayout from '../../components/DashboardLayout'
 
-// ⚠️ Mets le bon port de Spring Boot ici
 const API_BASE_URL = 'http://localhost:8083/api/paiement'
 
-function formatDT(value) {
-  const n = Number(value)
-  if (Number.isNaN(n)) return '0,00 DT'
-  return `${new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(n)} DT`
-}
+const formatDT = (n) =>
+  `${new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2 }).format(n || 0)} DT`
 
-function formatDate(value) {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10)
-  return d.toISOString().slice(0, 10)
-}
-
-function normalizeStatus(status) {
-  if (!status) return 'En attente'
-  const s = String(status).toLowerCase()
-  if (s.includes('pay')) return 'Payé'
-  if (s.includes('ann')) return 'Annulé'
-  if (s.includes('att') || s.includes('pend')) return 'En attente'
-  return status
-}
-
-export default function Payments() {
-  const [payments, setPayments] = useState([])
+export default function AdminPayments() {
+  const [paiements, setPaiements] = useState([])
   const [loading, setLoading] = useState(true)
-
-  const [statusFilter, setStatusFilter] = useState('Tous les statuts')
-  const [query, setQuery] = useState('')
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('TOUS')
 
   useEffect(() => {
-    const fetchPayments = async () => {
-      try {
-        setLoading(true)
-        const res = await axios.get(API_BASE_URL)
-        console.log('GET /api/paiement =>', res.status, res.data)
-        setPayments(Array.isArray(res.data) ? res.data : [])
-      } catch (e) {
-        console.error('Erreur GET paiements:', e)
-        console.log('status:', e?.response?.status)
-        console.log('data:', e?.response?.data)
-        setPayments([])
-        alert("Impossible de charger les paiements (vérifie CORS/URL/port).")
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchPayments()
   }, [])
 
-  // Mapping backend -> UI (compatible DTO: patientNomComplet)
-  const uiPayments = useMemo(() => {
-    return payments.map((p) => ({
-      id: p?.id,
-      patient: p?.patientNomComplet || (p?.patientId ? `Patient #${p.patientId}` : '—'),
-      montant: formatDT(p?.montant),
-      date: formatDate(p?.datePaiement),
-      statut: normalizeStatus(p?.status),
-      _raw: p,
-    }))
-  }, [payments])
-
-  // Filtre + recherche
-  const filteredPayments = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return uiPayments.filter((p) => {
-      const matchStatus =
-        statusFilter === 'Tous les statuts' ? true : p.statut === statusFilter
-
-      const matchQuery = !q
-        ? true
-        : [String(p.id), p.patient, p.montant, p.date, p.statut]
-            .some((x) => String(x).toLowerCase().includes(q))
-
-      return matchStatus && matchQuery
-    })
-  }, [uiPayments, statusFilter, query])
-
-  // Stats (cartes)
-  const stats = useMemo(() => {
-    const now = new Date()
-    const month = now.getMonth()
-    const year = now.getFullYear()
-
-    let revenusMois = 0
-    let enAttente = 0
-
-    payments.forEach((p) => {
-      const amount = Number(p?.montant ?? 0) || 0
-      const st = normalizeStatus(p?.status)
-      const d = new Date(p?.datePaiement)
-
-      const isThisMonth =
-        !Number.isNaN(d.getTime()) && d.getMonth() === month && d.getFullYear() === year
-
-      if (isThisMonth && st === 'Payé') revenusMois += amount
-      if (st === 'En attente') enAttente += amount
-    })
-
-    return {
-      revenusMois: formatDT(revenusMois),
-      enAttente: formatDT(enAttente),
-      transactions: payments.length,
-    }
-  }, [payments])
-
-  // Ajouter paiement (sans changer UI => prompt)
-  const handleNewInvoice = async () => {
+  const fetchPayments = async () => {
     try {
-      const patientIdStr = window.prompt('Patient ID ?', '1')
-      if (!patientIdStr) return
-      const patientId = Number(patientIdStr)
-      if (Number.isNaN(patientId)) return alert('Patient ID invalide')
-
-      const montantStr = window.prompt('Montant (ex: 65) ?', '65')
-      if (!montantStr) return
-      const montant = Number(montantStr.replace(',', '.'))
-      if (Number.isNaN(montant)) return alert('Montant invalide')
-
-      // Tu stockes dans DB: PAYE (comme ta capture)
-      const status =
-        window.prompt('Statut (PAYE / EN_ATTENTE / ANNULE) ?', 'PAYE') || 'PAYE'
-
-      const datePaiement =
-        window.prompt('Date paiement (YYYY-MM-DD) ?', new Date().toISOString().slice(0, 10)) ||
-        new Date().toISOString().slice(0, 10)
-
-      const payload = { montant, status, datePaiement }
-
-      const res = await axios.post(`${API_BASE_URL}/add/${patientId}`, payload)
-
-      setPayments((prev) => [res.data, ...prev])
-      alert('Paiement ajouté ✅')
-    } catch (e) {
-      console.error('Erreur add paiement:', e)
-      alert("Erreur lors de l'ajout ❌")
-    }
-  }
-
-  const handleView = (payment) => {
-    const raw = payment._raw || {}
-    alert(
-      `Paiement #${payment.id}\nPatient: ${payment.patient}\nMontant: ${payment.montant}\nDate: ${payment.date}\nStatut: ${payment.statut}\nFactureURL: ${raw.factureURL || ''}`
-    )
-  }
-
-  const handleEdit = async (payment) => {
-    try {
-      const id = payment._raw?.id ?? payment.id
-
-      const newMontantStr = window.prompt('Nouveau montant ?', String(payment._raw?.montant ?? ''))
-      if (newMontantStr === null) return
-
-      const newStatus = window.prompt(
-        'Nouveau statut (PAYE / EN_ATTENTE / ANNULE) ?',
-        String(payment._raw?.status ?? 'PAYE')
-      )
-      if (newStatus === null) return
-
-      const newDate = window.prompt('Nouvelle date (YYYY-MM-DD) ?', String(payment.date ?? ''))
-      if (newDate === null) return
-
-      const payload = {}
-      if (newMontantStr !== '') {
-        const v = Number(String(newMontantStr).replace(',', '.'))
-        if (!Number.isNaN(v)) payload.montant = v
-      }
-      if (newStatus) payload.status = newStatus
-      if (newDate) payload.datePaiement = newDate
-
-      await axios.patch(`${API_BASE_URL}/${id}`, payload)
-
-      // Recharger pour être sûr
+      setLoading(true)
       const res = await axios.get(API_BASE_URL)
-      setPayments(Array.isArray(res.data) ? res.data : [])
-
-      alert('Paiement modifié ✅')
+      setPaiements(Array.isArray(res.data) ? res.data : [])
     } catch (e) {
-      console.error('Erreur update paiement:', e)
-      alert('Erreur modification ❌')
+      console.error(e)
+      setPaiements([])
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const stats = useMemo(() => {
+    let totalPaye = 0
+    let totalAttente = 0
+    paiements.forEach(p => {
+      if (p.status === 'PAYE') totalPaye += p.montant || 0
+      if (p.status === 'EN_ATTENTE') totalAttente += p.montant || 0
+    })
+    return { total: paiements.length, totalPaye, totalAttente }
+  }, [paiements])
+
+  const filtered = useMemo(() => {
+    return paiements.filter(p => {
+      const matchStatus = statusFilter === 'TOUS' ? true : p.status === statusFilter
+      const q = search.toLowerCase()
+      const text = `${p.id} ${p.patient?.name} ${p.patient?.prenom} ${p.status}`.toLowerCase()
+      return matchStatus && text.includes(q)
+    })
+  }, [paiements, search, statusFilter])
+
+  const downloadReceipt = (paiement) => {
+    const content = `
+REÇU DE PAIEMENT - TÉLÉMÉDECINE
+==============================
+Patient : ${paiement.patient?.name} ${paiement.patient?.prenom}
+Email   : ${paiement.patient?.email}
+Montant : ${paiement.montant} DT
+Date    : ${paiement.datePaiement}
+Statut  : ${paiement.status}
+Réf     : PAIEMENT-${paiement.id}
+© ${new Date().getFullYear()}
+`
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `recu-paiement-${paiement.id}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
     <DashboardLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Paiements & Factures</h1>
-        <p className="text-sm text-slate-500">Gestion des transactions financières</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="card text-center">
-          <div className="text-2xl font-bold text-green-600">{stats.revenusMois}</div>
-          <div className="text-sm text-slate-500">Revenus ce mois</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Paiements & Factures</h1>
+            <p className="text-slate-500 mt-1">Gérez et suivez les transactions financières de la plateforme.</p>
+          </div>
+          <button 
+            onClick={() => window.print()}
+            className="flex items-center justify-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+          >
+            <Download size={18} /> Exporter Rapport
+          </button>
         </div>
-        <div className="card text-center">
-          <div className="text-2xl font-bold text-orange-600">{stats.enAttente}</div>
-          <div className="text-sm text-slate-500">En attente</div>
+
+        {/* STATS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <StatCard 
+            title="Total paiements" 
+            value={stats.total} 
+            icon={<CreditCard className="text-blue-600" size={24} />}
+            trend="Volume global"
+            bgColor="bg-blue-50"
+          />
+          <StatCard 
+            title="Total payé" 
+            value={formatDT(stats.totalPaye)} 
+            icon={<CheckCircle2 className="text-emerald-600" size={24} />}
+            trend="Revenus encaissés"
+            bgColor="bg-emerald-50"
+          />
+          <StatCard 
+            title="En attente" 
+            value={formatDT(stats.totalAttente)} 
+            icon={<Clock className="text-amber-600" size={24} />}
+            trend="À relancer"
+            bgColor="bg-amber-50"
+          />
         </div>
-        <div className="card text-center">
-          <div className="text-2xl font-bold text-blue-600">{stats.transactions}</div>
-          <div className="text-sm text-slate-500">Transactions</div>
+
+        {/* FILTERS AREA */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative flex-1 w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm"
+              placeholder="Rechercher un patient ou une référence..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Filter size={18} className="text-slate-400 hidden md:block" />
+            <select
+              className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-48 cursor-pointer"
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+            >
+              <option value="TOUS">Tous les statuts</option>
+              <option value="PAYE">Payé</option>
+              <option value="EN_ATTENTE">En attente</option>
+              <option value="ANNULE">Annulé</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div className="flex gap-4 mb-4">
-        <button
-          className="bg-primary-500 text-white px-4 py-2 rounded"
-          onClick={handleNewInvoice}
-        >
-          Nouvelle facture
-        </button>
-
-        <select
-          className="border px-3 py-2 rounded"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option>Tous les statuts</option>
-          <option>Payé</option>
-          <option>En attente</option>
-          <option>Annulé</option>
-        </select>
-
-        <input
-          className="border px-3 py-2 rounded flex-1 max-w-md"
-          placeholder="Rechercher une transaction..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
-
-      <div className="card">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="text-slate-500 text-sm border-b">
-              <tr>
-                <th className="py-3">#</th>
-                <th className="py-3">Patient</th>
-                <th className="py-3">Montant</th>
-                <th className="py-3">Date</th>
-                <th className="py-3">Statut</th>
-                <th className="py-3">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {loading ? (
-                <tr className="border-b">
-                  <td className="py-4 text-slate-500" colSpan={6}>
-                    Chargement...
-                  </td>
+        {/* TABLE CARD */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100">
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Réf ID</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Patient</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Montant</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
-              ) : filteredPayments.length === 0 ? (
-                <tr className="border-b">
-                  <td className="py-4 text-slate-500" colSpan={6}>
-                    Aucun paiement trouvé.
-                  </td>
-                </tr>
-              ) : (
-                filteredPayments.map((payment) => (
-                  <tr key={payment.id} className="border-b hover:bg-slate-50">
-                    <td className="py-3">{payment.id}</td>
-                    <td className="py-3">{payment.patient}</td>
-                    <td className="py-3 font-medium">{payment.montant}</td>
-                    <td className="py-3">{payment.date}</td>
-                    <td className="py-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          payment.statut === 'Payé'
-                            ? 'bg-green-100 text-green-800'
-                            : payment.statut === 'Annulé'
-                            ? 'bg-slate-200 text-slate-800'
-                            : 'bg-orange-100 text-orange-800'
-                        }`}
-                      >
-                        {payment.statut}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <button
-                        className="text-primary-600 text-sm mr-3"
-                        onClick={() => handleView(payment)}
-                      >
-                        Voir
-                      </button>
-                      <button
-                        className="text-slate-600 text-sm"
-                        onClick={() => handleEdit(payment)}
-                      >
-                        Modifier
-                      </button>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100">
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td colSpan={6} className="px-6 py-4 h-16 bg-slate-50/20"></td>
+                    </tr>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 italic">
+                      Aucune transaction trouvée pour cette recherche.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  filtered.map(p => (
+                    <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-xs font-medium text-slate-400">#PAI-{p.id}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-slate-700">{p.patient?.name} {p.patient?.prenom}</span>
+                          <span className="text-xs text-slate-400">{p.patient?.email}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-bold text-slate-800 text-sm">
+                        {formatDT(p.montant)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500">
+                        {p.datePaiement}
+                      </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge status={p.status} />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg"
+                          onClick={() => downloadReceipt(p)}
+                        >
+                          <FileText size={14} /> Facture
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </DashboardLayout>
+  )
+}
+
+/* SUB-COMPONENTS */
+
+function StatCard({ title, value, icon, trend, bgColor }) {
+  return (
+    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
+          <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+          <div className="mt-2 flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-slate-400">
+            <TrendingUp size={12} /> {trend}
+          </div>
+        </div>
+        <div className={`p-3 rounded-xl ${bgColor}`}>
+          {icon}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function StatusBadge({ status }) {
+  const configs = {
+    PAYE: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    EN_ATTENTE: 'bg-amber-100 text-amber-700 border-amber-200',
+    ANNULE: 'bg-rose-100 text-rose-700 border-rose-200',
+    DEFAULT: 'bg-slate-100 text-slate-700 border-slate-200'
+  }
+
+  const config = configs[status] || configs.DEFAULT
+
+  return (
+    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${config}`}>
+      {status}
+    </span>
   )
 }

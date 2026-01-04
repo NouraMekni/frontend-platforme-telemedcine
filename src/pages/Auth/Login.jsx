@@ -62,17 +62,20 @@ export default function Login() {
       <div className="flex flex-1 overflow-hidden">
         {/* --- LEFT SIDE: Branding --- */}
         <div className="hidden lg:flex lg:w-1/2 relative bg-cyan-700 items-center justify-center overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500"></div>
-          <div className="relative z-10 p-16 text-white max-w-xl">
-            <h1 className="text-6xl font-extrabold tracking-tight mb-6 leading-[1.1]">
-              Gestion <br />
-              <span className="text-cyan-300">Administrative.</span>
-            </h1>
-            <p className="text-xl text-blue-50 opacity-90">
-              Accédez au panneau de contrôle pour gérer les utilisateurs, les praticiens et les paramètres système.
-            </p>
-          </div>
-        </div>
+  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500"></div>
+  <div className="relative z-10 p-16 text-white max-w-xl">
+    <h1 className="text-6xl font-extrabold tracking-tight mb-6 leading-[1.1]">
+      Plateforme <br />
+     
+      <span className="text-cyan-300"> Télémédecine</span>
+    </h1>
+    <p className="text-xl text-blue-50 opacity-90">
+      Connectez-vous pour accéder à vos consultations médicales,
+      échanger avec des professionnels de santé et gérer votre espace personnel.
+    </p>
+  </div>
+</div>
+
 
         {/* --- RIGHT: LOGIN FORM --- */}
         <main className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-24 bg-slate-50">

@@ -1,13 +1,26 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import DashboardLayout from '../../components/DashboardLayout'
 import { useAuth } from '../../contexts/AuthContext'
 import axios from 'axios'
+import { 
+  FileText, 
+  Download, 
+  Search, 
+  Calendar, 
+  User, 
+  Mail, 
+  MapPin, 
+  FileSearch,
+  ChevronRight,
+  FolderOpen
+} from 'lucide-react'
 
 const API_URL = "http://localhost:8083/api/medecins"
 const RDV_API_URL = "http://localhost:8083/api/rendezvous"
 const PATIENTS_API_URL = "http://localhost:8083/api/patients"
+const API_DOCS_URL = 'http://localhost:8083/api/dossier-medical'
 
-export default function Patients(){
+export default function Patients() {
   const { user: medecin } = useAuth()
   const [patients, setPatients] = useState([])
   const [allPatients, setAllPatients] = useState([])
@@ -15,23 +28,21 @@ export default function Patients(){
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPatient, setSelectedPatient] = useState(null)
+  
+  // Document states
+  const [documents, setDocuments] = useState([])
+  const [loadingDocs, setLoadingDocs] = useState(false)
+
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAddRdvModal, setShowAddRdvModal] = useState(false)
+  
   const [formData, setFormData] = useState({
-    name: '',
-    prenom: '',
-    email: '',
-    password: '',
-    dataNaissance: '',
-    adresse: '',
-    antecedentsMedicaux: ''
+    name: '', prenom: '', email: '', password: '',
+    dataNaissance: '', adresse: '', antecedentsMedicaux: ''
   })
   
   const [rdvFormData, setRdvFormData] = useState({
-    patientEmail: '',
-    date: '',
-    time: '09:00',
-    description: ''
+    patientEmail: '', date: '', time: '09:00', description: ''
   })
 
   useEffect(() => {
@@ -41,38 +52,64 @@ export default function Patients(){
     }
   }, [medecin])
 
-const fetchPatients = async () => {
+  // Fetch documents when a patient is selected
+  useEffect(() => {
+    if (selectedPatient?.id) {
+      fetchPatientDocuments(selectedPatient.id)
+    }
+  }, [selectedPatient])
+
+  const fetchPatients = async () => {
     try {
       setLoading(true)
-      console.log("🔄 Loading patients for medecin:", medecin.id)
-      
-      // Essayer d'abord l'endpoint spécifique au médecin
       try {
         const response = await axios.get(`${API_URL}/${medecin.id}/patients`)
-        console.log("✅ Loaded medecin-specific patients:", response.data)
         setPatients(response.data)
-        setError(null)
-        return
       } catch (apiError) {
-        console.log("⚠️ Medecin-specific endpoint not available, using all patients")
+        const response = await axios.get(PATIENTS_API_URL)
+        setPatients(response.data)
       }
-      
-      // Fallback: utiliser tous les patients
-      const response = await axios.get(PATIENTS_API_URL)
-      console.log("📋 All patients loaded:", response.data)
-      setPatients(response.data)
-      setError(null)
     } catch (error) {
-      console.error('Error fetching patients:', error)
       setError('Erreur lors du chargement des patients')
-      setPatients([])
     } finally {
       setLoading(false)
     }
   }
 
+  const fetchPatientDocuments = async (patientId) => {
+    try {
+      setLoadingDocs(true)
+      const res = await axios.get(`${API_DOCS_URL}/patient/${patientId}`)
+      setDocuments(res.data || [])
+    } catch (err) {
+      console.error("Error fetching docs:", err)
+      setDocuments([])
+    } finally {
+      setLoadingDocs(false)
+    }
+  }
 
-   const fetchAllPatients = async () => {
+  const handleDownload = async (doc) => {
+    try {
+      const fileToRequest = doc.generatedFileName || doc.fileName;
+      const encodedFilename = encodeURIComponent(fileToRequest);
+      const res = await axios.get(`${API_DOCS_URL}/files/${encodedFilename}`, { 
+        responseType: 'blob' 
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', doc.fileName || "document.pdf"); 
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Erreur lors du téléchargement du fichier.");
+    }
+  }
+
+  const fetchAllPatients = async () => {
     try {
       const response = await axios.get(PATIENTS_API_URL)
       setAllPatients(response.data)
@@ -82,513 +119,256 @@ const fetchPatients = async () => {
   }
 
   const handleRemovePatient = async (patientId) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir retirer ce patient de votre liste ?')) return
-
+    if (!window.confirm('Retirer ce patient ?')) return
     try {
-      // Essayer l'endpoint API d'abord
-      try {
-        await axios.delete(`${API_URL}/${medecin.id}/patients/${patientId}`)
-        console.log("✅ Patient removed via API")
-      } catch (apiError) {
-        console.log("⚠️ API endpoint not available, removing locally only")
-      }
-      
-      // Supprimer de la liste locale dans tous les cas
+      try { await axios.delete(`${API_URL}/${medecin.id}/patients/${patientId}`) } catch (e) {}
       setPatients(patients.filter(p => p.id !== patientId))
-      if (selectedPatient?.id === patientId) {
-        setSelectedPatient(null)
-      }
-      alert('Patient retiré avec succès!')
+      if (selectedPatient?.id === patientId) setSelectedPatient(null)
+      alert('Patient retiré!')
     } catch (error) {
-      console.error('Error removing patient:', error)
-      alert('Erreur lors du retrait du patient')
+      alert('Erreur lors du retrait')
     }
   }
 
-  // Dans Planning.jsx
-const fetchRDVs = async () => {
-  try {
-    console.log("🔄 Fetching RDVs for medecin ID:", medecin.id);
-    const res = await fetch(`${API_URL_RDV}/medecin/${medecin.id}`);
-    
-    console.log("📡 Response status:", res.status);
-    
-    if (!res.ok) {
-      console.error("❌ Error response:", res.status, res.statusText);
-      return;
-    }
-
-    const data = await res.json();
-    console.log("📅 RDVs data received:", data);
-    console.log("📊 Number of RDVs:", data.length);
-    
-    // Log each RDV
-    data.forEach((rdv, index) => {
-      console.log(`📝 RDV ${index + 1}:`, {
-        id: rdv.id,
-        date: rdv.date,
-        time: rdv.time,
-        description: rdv.description,
-        status: rdv.status,
-        patient: rdv.patient ? `${rdv.patient.name} ${rdv.patient.prenom}` : 'No patient',
-        medecin: rdv.medecin ? `Dr. ${rdv.medecin.name}` : 'No medecin'
-      });
-    });
-    
-    setRdvs(Array.isArray(data) ? data : []);
-  } catch (error) {
-    console.error("❌ Error fetch RDVs:", error);
-  }
-};
-
-
- const handleAddRendezVous = async () => {
-    if (!rdvFormData.patientEmail || !rdvFormData.date || !rdvFormData.description) {
-      alert('Veuillez remplir tous les champs obligatoires')
-      return
-    }
-
+  const handleAddRendezVous = async () => {
+    if (!rdvFormData.patientEmail || !rdvFormData.date) return alert('Champs requis')
     try {
-      console.log("🚀 Creating RDV with data:", rdvFormData)
-      
-      // Trouver le patient par email
       const patient = allPatients.find(p => p.email === rdvFormData.patientEmail)
-      console.log("👤 Found patient:", patient)
-      
-      if (!patient) {
-        alert('Aucun patient trouvé avec cet email')
-        return
-      }
-
-      const rendezVousData = {
-        date: rdvFormData.date,
-        time: rdvFormData.time,
-        description: rdvFormData.description
-      }
-
-      console.log("📤 Sending RDV to backend...")
-      const response = await axios.post(
-        `${RDV_API_URL}/add/${patient.id}/${medecin.id}`,
-        rendezVousData
-      )
-
-      console.log("✅ RDV created successfully:", response.data)
-      
-      setShowAddRdvModal(false)
-      setRdvFormData({
-        patientEmail: '',
-        date: '',
-        time: '09:00',
-        description: ''
+      if (!patient) return alert('Patient non trouvé')
+      await axios.post(`${RDV_API_URL}/add/${patient.id}/${medecin.id}`, {
+        date: rdvFormData.date, time: rdvFormData.time, description: rdvFormData.description
       })
-      
-      alert('Rendez-vous créé avec succès! Le statut est "En attente". Vous pouvez l\'approuver dans le Planning.')
-
+      setShowAddRdvModal(false)
+      alert('RDV créé avec succès!')
     } catch (error) {
-      console.error("❌ Error creating rendez-vous:", error)
-      console.error("Error details:", error.response?.data)
-      alert('Erreur lors de la création du rendez-vous: ' + (error.response?.data?.message || error.message))
+      alert('Erreur creation RDV')
     }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      prenom: '',
-      email: '',
-      password: '',
-      dataNaissance: '',
-      adresse: '',
-      antecedentsMedicaux: ''
-    })
   }
 
   const openEditModal = (patient) => {
     setFormData({
-      name: patient.name || '',
-      prenom: patient.prenom || '',
-      email: patient.email || '',
-      password: '', // Don't pre-fill password for security
-      dataNaissance: patient.dataNaissance ? patient.dataNaissance.split('T')[0] : '',
-      adresse: patient.adresse || '',
-      antecedentsMedicaux: patient.antecedentsMedicaux || ''
+      name: patient.name || '', prenom: patient.prenom || '', email: patient.email || '',
+      password: '', dataNaissance: patient.dataNaissance ? patient.dataNaissance.split('T')[0] : '',
+      adresse: patient.adresse || '', antecedentsMedicaux: patient.antecedentsMedicaux || ''
     })
     setShowEditModal(true)
   }
 
-  const openAddRdvModal = () => {
-    setRdvFormData({
-      patientEmail: '',
-      date: '',
-      time: '09:00',
-      description: ''
-    })
-    setShowAddRdvModal(true)
-  }
-
   const handleUpdatePatient = async () => {
-    if (!selectedPatient) return
-
     try {
-      const response = await axios.put(`http://localhost:8083/api/patients/${selectedPatient.id}`, formData)
+      const response = await axios.put(`${PATIENTS_API_URL}/${selectedPatient.id}`, formData)
       setPatients(patients.map(p => p.id === selectedPatient.id ? response.data : p))
       setSelectedPatient(response.data)
       setShowEditModal(false)
-      resetForm()
-      alert('Patient modifié avec succès!')
-    } catch (error) {
-      console.error('Error updating patient:', error)
-      alert('Erreur lors de la modification du patient')
-    }
+      alert('Succès!')
+    } catch (e) { alert('Erreur modification') }
   }
 
-  const filteredPatients = patients.filter(patient => 
-    `${patient.name} ${patient.prenom}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPatients = patients.filter(p => 
+    `${p.name} ${p.prenom}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.email?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const calculateAge = (dateString) => {
     if (!dateString) return 'N/A'
-    const birthDate = new Date(dateString)
-    const today = new Date()
-    let age = today.getFullYear() - birthDate.getFullYear()
-    const monthDiff = today.getMonth() - birthDate.getMonth()
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--
-    }
-    
+    const age = new Date().getFullYear() - new Date(dateString).getFullYear()
     return age
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString('fr-FR')
-  }
-
-  const generateTimeSlots = () => {
-    const slots = []
-    for (let hour = 8; hour <= 18; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-        slots.push(timeString)
-      }
-    }
-    return slots
-  }
-
-  const timeSlots = generateTimeSlots()
+  const timeSlots = Array.from({ length: 22 }, (_, i) => {
+    const hour = Math.floor(i / 2) + 8
+    const min = i % 2 === 0 ? '00' : '30'
+    return `${hour.toString().padStart(2, '0')}:${min}`
+  })
 
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestion des Patients</h1>
-          <p className="text-gray-600">Liste et dossiers de vos patients</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Gestion des Patients</h1>
+            <p className="text-slate-500 mt-1">Consultez les dossiers et planifiez les consultations.</p>
+          </div>
+          <button 
+            onClick={() => setShowAddRdvModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all flex items-center gap-2"
+          >
+            <Calendar size={20} /> Nouveau RDV
+          </button>
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            <div className="flex-1 w-full">
-              <input 
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
-                placeholder="Rechercher un patient par nom ou email..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-3 w-full lg:w-auto">
-              <select className="border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors flex-1">
-                <option>Tous les patients</option>
-                <option>Vus récemment</option>
-                <option>À revoir</option>
-              </select>
-              <button 
-                onClick={openAddRdvModal}
-                className="bg-gradient-to-r from-blue-400 to-blue-700 hover:from-blue-700 hover:to-blue-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-2"
-              >
-                <span>📅</span>
-                Nouveau Rendez-vous
-              </button>
-            </div>
-          </div>
+        {/* SEARCH BAR */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 mb-8 flex items-center gap-4">
+          <Search className="text-slate-400 ml-2" size={20} />
+          <input 
+            className="flex-1 focus:outline-none text-slate-700 font-medium" 
+            placeholder="Rechercher un patient par nom ou email..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
         </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Patients List */}
-          <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
-            <div className="p-6 border-b border-blue-100">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Liste des patients 
-                <span className="ml-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                  {filteredPatients.length}
-                </span>
-              </h3>
-            </div>
-            
-            <div className="p-6">
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="text-gray-600 mt-2">Chargement des patients...</p>
-                </div>
-              ) : filteredPatients.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">👥</div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Aucun patient trouvé</h3>
-                  <p className="text-gray-500">
-                    {searchTerm ? 'Aucun patient ne correspond à votre recherche' : 'Aucun patient dans votre liste. Les patients seront ajoutés automatiquement lorsque vous approuverez leurs rendez-vous.'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredPatients.map(patient => (
-                    <div 
-                      key={patient.id} 
-                      className={`border border-blue-200 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-                        selectedPatient?.id === patient.id 
-                          ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-300 shadow-md' 
-                          : 'hover:bg-blue-50 hover:shadow-sm'
-                      }`}
-                      onClick={() => setSelectedPatient(patient)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="bg-blue-100 p-3 rounded-lg">
-                            <span className="text-lg">👤</span>
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-800">
-                              {patient.name} {patient.prenom}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {calculateAge(patient.dataNaissance)} ans • {patient.email}
-                            </div>
-                            {patient.antecedentsMedicaux && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                {patient.antecedentsMedicaux}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {formatDate(patient.dataNaissance)}
-                        </div>
-                      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* PATIENTS LIST */}
+          <div className="lg:col-span-5 space-y-4">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Patients ({filteredPatients.length})</h3>
+            <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar space-y-3">
+              {loading ? <div className="p-10 text-center animate-pulse text-slate-400">Chargement...</div> : 
+               filteredPatients.map(p => (
+                <div 
+                  key={p.id} 
+                  onClick={() => setSelectedPatient(p)}
+                  className={`p-4 rounded-3xl border transition-all cursor-pointer group ${
+                    selectedPatient?.id === p.id ? 'bg-blue-600 border-blue-600 shadow-xl shadow-blue-100' : 'bg-white border-slate-100 hover:border-blue-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg ${selectedPatient?.id === p.id ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-600'}`}>
+                      {p.name[0]}{p.prenom[0]}
                     </div>
-                  ))}
+                    <div className="flex-1">
+                      <p className={`font-bold ${selectedPatient?.id === p.id ? 'text-white' : 'text-slate-800'}`}>{p.name} {p.prenom}</p>
+                      <p className={`text-xs ${selectedPatient?.id === p.id ? 'text-blue-100' : 'text-slate-500'}`}>{p.email}</p>
+                    </div>
+                    <ChevronRight size={18} className={selectedPatient?.id === p.id ? 'text-white' : 'text-slate-300'} />
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
 
-          {/* Patient Details */}
-          <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
-            <div className="p-6 border-b border-blue-100">
-              <h3 className="text-xl font-semibold text-gray-800">
-                {selectedPatient ? `Dossier de ${selectedPatient.name} ${selectedPatient.prenom}` : 'Dossier Patient'}
-              </h3>
-            </div>
-            
-            <div className="p-6">
-              {selectedPatient ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="bg-blue-50 rounded-xl p-4">
-                      <label className="text-sm font-medium text-gray-600 block mb-2">Âge</label>
-                      <div className="font-semibold text-gray-800 text-lg">
-                        {calculateAge(selectedPatient.dataNaissance)} ans
-                      </div>
-                    </div>
-                    <div className="bg-blue-50 rounded-xl p-4">
-                      <label className="text-sm font-medium text-gray-600 block mb-2">Date de naissance</label>
-                      <div className="font-semibold text-gray-800">
-                        {formatDate(selectedPatient.dataNaissance)}
-                      </div>
+          {/* PATIENT DOSSIER & DOCUMENTS */}
+          <div className="lg:col-span-7">
+            {selectedPatient ? (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                {/* INFO CARD */}
+                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+                  <div className="flex justify-between items-start mb-8">
+                    <h2 className="text-2xl font-black text-slate-800">Dossier Médical</h2>
+                    <div className="flex gap-2">
+                      <button onClick={() => openEditModal(selectedPatient)} className="p-2 bg-slate-50 text-slate-600 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors"><FileText size={20}/></button>
                     </div>
                   </div>
-                  
-                  <div className="bg-blue-50 rounded-xl p-4">
-                    <label className="text-sm font-medium text-gray-600 block mb-2">Email</label>
-                    <div className="font-semibold text-gray-800">{selectedPatient.email}</div>
+
+                  <div className="grid grid-cols-2 gap-6 mb-8">
+                    <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl">
+                       <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600"><User size={18}/></div>
+                       <div><p className="text-[10px] uppercase font-black text-slate-400">Âge</p><p className="font-bold text-slate-700">{calculateAge(selectedPatient.dataNaissance)} ans</p></div>
+                    </div>
+                    <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl">
+                       <div className="p-2 bg-white rounded-lg shadow-sm text-blue-600"><Mail size={18}/></div>
+                       <div className="overflow-hidden"><p className="text-[10px] uppercase font-black text-slate-400">Contact</p><p className="font-bold text-slate-700 truncate text-sm">{selectedPatient.email}</p></div>
+                    </div>
                   </div>
 
-                  {selectedPatient.adresse && (
-                    <div className="bg-blue-50 rounded-xl p-4">
-                      <label className="text-sm font-medium text-gray-600 block mb-2">Adresse</label>
-                      <div className="font-semibold text-gray-800">{selectedPatient.adresse}</div>
+                  <div className="space-y-4 mb-8">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Antécédents</p>
+                    <div className="p-4 bg-red-50/50 border border-red-100 rounded-2xl text-red-700 text-sm font-medium">
+                      {selectedPatient.antecedentsMedicaux || "Aucun antécédent signalé."}
                     </div>
-                  )}
+                  </div>
 
-                  {selectedPatient.antecedentsMedicaux && (
-                    <div className="bg-blue-50 rounded-xl p-4">
-                      <label className="text-sm font-medium text-gray-600 block mb-2">Antécédents médicaux</label>
-                      <div className="font-semibold text-gray-800">{selectedPatient.antecedentsMedicaux}</div>
+                  {/* DOCUMENTS SECTION */}
+                  <div className="pt-8 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-black text-slate-800 flex items-center gap-2">
+                        <FolderOpen className="text-blue-600" size={20}/> Documents ({documents.length})
+                      </h4>
                     </div>
-                  )}
 
-                  <div className="pt-6 border-t border-gray-200">
-                    <div className="flex gap-3 flex-wrap">
-                      <button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300">
-                        Nouvelle consultation
-                      </button>
-                      <button 
-                        onClick={() => openEditModal(selectedPatient)}
-                        className="border border-blue-600 text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors"
-                      >
-                        Modifier
-                      </button>
-                      <button 
-                        onClick={() => handleRemovePatient(selectedPatient.id)}
-                        className="border border-red-600 text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-50 transition-colors"
-                      >
-                        Retirer
-                      </button>
+                    <div className="space-y-3">
+                      {loadingDocs ? <div className="text-center py-6 animate-pulse text-slate-400">Chargement des fichiers...</div> : 
+                       documents.length === 0 ? (
+                         <div className="text-center py-10 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                           <FileSearch size={32} className="mx-auto text-slate-300 mb-2" />
+                           <p className="text-slate-400 text-sm">Aucun document dans le dossier.</p>
+                         </div>
+                       ) : (
+                         documents.map(doc => (
+                           <div key={doc.id} className="group bg-white border border-slate-100 p-4 rounded-2xl flex items-center justify-between hover:shadow-md transition-all">
+                             <div className="flex items-center gap-3">
+                               <div className="p-2 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                 <FileText size={20} />
+                               </div>
+                               <div>
+                                 <p className="font-bold text-slate-700 text-sm truncate max-w-[200px]">{doc.title}</p>
+                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{doc.fileName}</p>
+                               </div>
+                             </div>
+                             <button 
+                               onClick={() => handleDownload(doc)}
+                               className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                             >
+                               <Download size={20} />
+                             </button>
+                           </div>
+                         ))
+                       )}
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📋</div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Aucun patient sélectionné</h3>
-                  <p className="text-gray-500">Sélectionnez un patient dans la liste pour voir son dossier</p>
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center p-20 bg-white rounded-[3rem] border border-dashed border-slate-200">
+                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                  <User size={48} className="text-slate-200" />
                 </div>
-              )}
-            </div>
+                <h3 className="text-xl font-bold text-slate-400">Aucun patient sélectionné</h3>
+                <p className="text-slate-300 max-w-xs mt-2 text-sm">Sélectionnez un patient à gauche pour consulter son dossier complet et ses documents médicaux.</p>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Add Rendez-vous Modal */}
-        {showAddRdvModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-              <div className="bg-gradient-to-r from-green-600 to-green-700 p-6 rounded-t-2xl">
-                <h2 className="text-xl font-bold text-white">Nouveau Rendez-vous</h2>
-              </div>
-              
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    📧 Email du Patient
-                  </label>
-                  <input
-                    type="email"
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                    value={rdvFormData.patientEmail}
-                    onChange={e => setRdvFormData({...rdvFormData, patientEmail: e.target.value})}
-                    placeholder="Entrez l'email du patient"
-                    list="patientEmails"
-                  />
-                  <datalist id="patientEmails">
-                    {allPatients.map(patient => (
-                      <option key={patient.id} value={patient.email} />
-                    ))}
-                  </datalist>
-                  <p className="text-xs text-gray-500 mt-1">
-                    L'email doit correspondre à un patient existant dans le système
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      📅 Date
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                      value={rdvFormData.date}
-                      onChange={e => setRdvFormData({...rdvFormData, date: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      ⏰ Heure
-                    </label>
-                    <select
-                      className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                      value={rdvFormData.time}
-                      onChange={e => setRdvFormData({...rdvFormData, time: e.target.value})}
-                    >
-                      {timeSlots.map((slot) => (
-                        <option key={slot} value={slot}>
-                          {slot}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    📝 Description / Motif
-                  </label>
-                  <textarea
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors resize-none"
-                    rows="3"
-                    value={rdvFormData.description}
-                    onChange={e => setRdvFormData({...rdvFormData, description: e.target.value})}
-                    placeholder="Description de la consultation..."
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
-                <button
-                  onClick={() => setShowAddRdvModal(false)}
-                  className="px-6 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleAddRendezVous}
-                  className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300"
-                >
-                  Créer Rendez-vous
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Edit Patient Modal */}
-        {showEditModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-t-2xl">
-                <h2 className="text-xl font-bold text-white">Modifier Patient</h2>
-              </div>
-              
-              <div className="p-6 space-y-4">
-                {/* ... (le reste du code de la modal d'édition reste identique) ... */}
-              </div>
-
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="px-6 py-3 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handleUpdatePatient}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300"
-                >
-                  Modifier
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* RDV MODAL (Simplified Layout) */}
+      {showAddRdvModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAddRdvModal(false)} />
+          <div className="relative bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="bg-blue-600 p-6 text-white flex justify-between items-center">
+              <h2 className="text-xl font-bold">Nouveau RDV</h2>
+              <button onClick={() => setShowAddRdvModal(false)}><X/></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Email Patient</label>
+                <input 
+                  type="email" list="patientEmailsList" className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" 
+                  onChange={e => setRdvFormData({...rdvFormData, patientEmail: e.target.value})}
+                />
+                <datalist id="patientEmailsList">
+                   {allPatients.map(p => <option key={p.id} value={p.email} />)}
+                </datalist>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Date</label>
+                  <input type="date" className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" onChange={e => setRdvFormData({...rdvFormData, date: e.target.value})}/>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Heure</label>
+                  <select className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" onChange={e => setRdvFormData({...rdvFormData, time: e.target.value})}>
+                    {timeSlots.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Motif</label>
+                <textarea rows="3" className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none resize-none" onChange={e => setRdvFormData({...rdvFormData, description: e.target.value})}/>
+              </div>
+              <button onClick={handleAddRendezVous} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-100 mt-4">Confirmer le RDV</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STYLES */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+      `}</style>
     </DashboardLayout>
   )
 }
